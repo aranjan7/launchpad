@@ -1,10 +1,16 @@
 # launchpad
 Script to edit, view bugs in Launchpad
 
+**To edit a bug use 'edit-bug' **
+
+```
+>> ./edit-bug --help
 
 Usage: ./edit-bug: bug-id 
 
-None
+Edit Launchpad bug with given ID.
+
+
 
 Options:
   -h, --help            show this help message and exit
@@ -12,9 +18,7 @@ Options:
   -m MILESTONE, --milestone=MILESTONE
                         set milestone
   -e SERIES, --series=SERIES
-                        Edit series
-  --newseries=NEWSERIES
-                        create new series
+                        Edit the specified series. 'all' is valid
   -a ASSIGNEE, --assignee=ASSIGNEE
                         assign to launchpad ID
   -s STATUS, --status=STATUS
@@ -24,9 +28,15 @@ Options:
   -i IMPORTANCE, --importance=IMPORTANCE
                         assign importance to the bug
 
+```
+
+**To view/search bugs use ./show-bug **
+
+```
+>> ./show-bug --help
 
 Usage: ./show-bug: bug-id 
-Show launchpad bug
+Show or search launchpad bug
    
 
 
@@ -53,4 +63,4 @@ Options:
   --since=SINCE         Create since date: in yyyy-mm-dd format
   --before=BEFORE       Create before date: in yyyy-mm-dd format
   --modified=MODIFIED   Modified since date: in yyyy-mm-dd format
-
+```

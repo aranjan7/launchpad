@@ -7,7 +7,7 @@
 # This file is script to scrub Contrail bugs on launchpad.
 #
 
-"""Show launchpad bug
+"""Show or search launchpad bug
    
 """
 

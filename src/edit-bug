@@ -6,6 +6,10 @@
 #
 # This file is script to scrub Contrail bugs on launchpad.
 #
+"""Edit Launchpad bug with given ID.
+
+"""
+
 
 import os
 import sys
@@ -13,10 +17,6 @@ import sys
 from optparse import OptionParser
 
 from launchpadlib.launchpad import Launchpad
-
-"""Edit bug target...
-
-"""
 
 status_dict = {
     'FIX_COMMITTED' : 'Fix Committed',
