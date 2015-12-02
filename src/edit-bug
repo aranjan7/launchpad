@@ -1,0 +1,199 @@
+#!/usr/bin/env python
+#
+# Copyright (C) 2015, Juniper Networks
+#
+# Author: Ashish Ranjan
+#
+# This file is script to scrub Contrail bugs on launchpad.
+#
+
+
+import os
+import sys
+
+from optparse import OptionParser
+
+from launchpadlib.launchpad import Launchpad
+
+"""Edit bug target...
+
+"""
+
+status_dict = {
+    'FIX_COMMITTED' : 'Fix Committed',
+    'FIX_RELEASED' : 'Fix Released',
+    'TRIAGED' : 'Triaged',
+    'PROGRESS' : 'In Progress',
+    'NEW' : 'New',
+    'INCOMPLETE' : 'Incomplete',
+    'CONFIRMED' : 'Confirmed',
+    'WONTFIX' : 'Won\'t Fix',
+    'OPINION' : 'Opinion',
+    'INVALID' : 'Invalid'
+}
+
+importance_dict = {
+    'UNDECIDED' : 'Undecided',
+    'CRITICAL' : 'Critical',
+    'HIGH' : 'High',
+    'MEDIUM' : 'Medium',
+    'LOW' : 'Low',
+    'WISHLIST' : 'Wishlist'
+}
+
+FIX_COMMITTED = 'Fix Committed'
+FIX_RELEASED = 'Fix Released'
+cachedir = "~/.launchpadlib/cache/"
+project = "juniperopenstack"
+launchpad = None
+dist = None
+
+def printf(format, *args):
+    sys.stdout.write(format % args)
+
+#
+# Get matching object from the milestone collection in series
+#
+def get_milestone(ser, milestone_str):
+    if (milestone_str is None):
+        return None
+
+    if ser.name == 'trunk':
+        allms = dist.active_milestones
+        for ms in allms:
+           if milestone_str in str(ms):
+               return ms
+        return None
+        
+    for ms in ser.all_milestones:
+        if milestone_str in str(ms):
+            return ms
+    return None
+
+#
+# add a series to a given bug with assignee, milestone fields set
+#
+def edit_series(task, milestone, assignee, importance, status):
+    if (milestone is not None):
+        task.milestone_link = milestone
+
+    if (status is not None):
+        task.status = status
+
+    if str(assignee).lower() != "none":
+        task.assignee = assignee
+
+    task.importance = importance
+    task.lp_save()
+    return
+
+#
+# Function to set milestone to existing series (aka 'task') in the bug
+# If the specified series is not linked to the bug, link it and set
+# 'assignee' & 'importance' field from other existing series
+#
+def set_milestone(bug, o):
+   #if (o.series is not None and o.series != "all"):
+   series = dist.getSeries(name=o.series)
+   series_url = str(series)
+
+   assignee = launchpad.people[o.assignee]
+   importance = o.importance
+   milestone = o.milestone
+
+   for task in bug.bug_tasks:
+       if ((o.series == "all" and "trunk" not in str(task)) or str(task).startswith(series_url)):
+           milestone_link = get_milestone(ser=series, milestone_str=milestone)
+           if milestone_link or milestone is None:
+               edit_series(task, milestone_link, assignee, importance, o.status)
+               if o.series != "all":
+                   return True
+           else:
+               print "Milestone %s not found for series %s " % (milestone , series)
+               return False
+
+       # remember data for existing scope
+       if (task.assignee is not None and assignee is None):
+           assignee = task.assignee
+       if task.importance is not None:
+           importance = task.importance
+       print "Task assignee %s %s " %(importance , assignee)
+
+   if o.series != "all":
+       #create the missing series 
+       new_task = bug.addTask(target=series)
+       milestone_link = get_milestone(ser=series, milestone_str=milestone)
+       if milestone_link:
+            edit_series(new_task, milestone_link, assignee, importance, o.status)
+
+   return False
+
+def set_comment(bug, comment):
+   bug.newMessage(content=comment)
+   bug.lp_save()
+   return
+       
+
+def main(args):
+    global launchpad 
+    global dist 
+
+    usage = """%s: bug-id \n\n%s""" % (sys.argv[0], __doc__)
+    parser = OptionParser(usage=usage)
+
+    parser.add_option(
+        '-n', '--dry-run', action='store_true',
+        help='Describe what the script would do without doing it.')
+    parser.add_option(
+            '-m', '--milestone', type="string", action="store", dest="milestone",  help="set milestone")
+    parser.add_option(
+            '-e', '--series', type="string", action="store", dest="series", help="Edit series")
+    parser.add_option(
+            '--newseries', type="string", action="store", dest="newseries", help="create new series")
+    parser.add_option(
+            '-a', '--assignee', type="string", action="store", dest="assignee", default="none", help="assign to launchpad ID")
+    parser.add_option(
+            '-s', '--status', type="string", action="store", dest="status", help="set status of the bug")
+    parser.add_option(
+            '-c', '--comment', type="string", action="store", dest="comment", help=" Add comment to the bug")
+    parser.add_option(
+            '-i', '--importance', type="string", action="store", dest="importance", default="Undecided", help="assign importance to the bug")
+
+    (options, args) = parser.parse_args(args=args)
+
+    if len(args) < 2:
+        parser.print_usage()
+        return 1
+
+    if options.status is not None:
+        #split into list remove leading spaces
+        status = [j.strip() for j in options.status.split(",")]
+        st_l = [ v for v in status_dict.values() ]
+        if not (set(st_l) >= set(status)):
+            print 'Valid values for Status field are %s' % (st_l)
+            return []
+
+    if options.importance is not None:
+        imp = [j.strip() for j in options.importance.split(",")]
+        imp_l = [ v for v in importance_dict.values() ]
+        if not (set(imp_l) >= set(imp)):
+            print 'Valid values for importance field are %s' % (imp_l)
+            return []
+
+    for bug_id in args[1:]:
+        launchpad = Launchpad.login_with('hello-world', 'production')
+        dist = launchpad.distributions[project]
+        bug = launchpad.bugs[bug_id]
+        #print (dist.lp_attributes)
+
+        if options.comment is not None:
+            set_comment(bug, options.comment)
+        
+        # Find series object
+        if options.series is not None:
+            set_milestone(bug, options)
+
+    return 0
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv[0:]))
