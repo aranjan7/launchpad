@@ -7,7 +7,6 @@
 # This file is script to scrub Contrail bugs on launchpad.
 #
 
-
 import os
 import sys
 
@@ -33,6 +32,7 @@ status_dict = {
 }
 
 importance_dict = {
+    'UNKNOWN' : 'Unknown',
     'UNDECIDED' : 'Undecided',
     'CRITICAL' : 'Critical',
     'HIGH' : 'High',
@@ -147,9 +147,7 @@ def main(args):
     parser.add_option(
             '-m', '--milestone', type="string", action="store", dest="milestone",  help="set milestone")
     parser.add_option(
-            '-e', '--series', type="string", action="store", dest="series", help="Edit series")
-    parser.add_option(
-            '--newseries', type="string", action="store", dest="newseries", help="create new series")
+            '-e', '--series', type="string", action="store", dest="series", help="Edit the specified series. 'all' is valid")
     parser.add_option(
             '-a', '--assignee', type="string", action="store", dest="assignee", default="none", help="assign to launchpad ID")
     parser.add_option(
