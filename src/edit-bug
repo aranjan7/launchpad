@@ -58,6 +58,7 @@ def get_milestone(ser, milestone_str):
     if (milestone_str is None):
         return None
 
+
     if ser.name == 'trunk':
         allms = dist.active_milestones
         for ms in allms:
@@ -65,9 +66,13 @@ def get_milestone(ser, milestone_str):
                return ms
         return None
         
+    if (milestone_str.lower() == "latest"):
+        return ser.all_milestones[0]
+
     for ms in ser.all_milestones:
         if milestone_str in str(ms):
             return ms
+
     return None
 
 #
@@ -119,7 +124,7 @@ def set_milestone(bug, o):
            importance = task.importance
        print "Task assignee %s %s " %(importance , assignee)
 
-   if o.series != "all":
+   if o.series != "all" and o.series is not None:
        #create the missing series 
        new_task = bug.addTask(target=series)
        milestone_link = get_milestone(ser=series, milestone_str=milestone)
