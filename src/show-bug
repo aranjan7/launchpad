@@ -7,8 +7,7 @@
 # This file is script to scrub Contrail bugs on launchpad.
 #
 
-"""Show or search launchpad bug
-   
+"""Show or search launchpad bug(s)
 """
 
 import os
@@ -33,7 +32,6 @@ status_dict = {
 }
 
 cachedir = "~/.launchpadlib/cache/"
-project = "juniperopenstack"
 
 
 def printf(format, *args):
@@ -55,18 +53,12 @@ def match_task(task, o):
     return False
 
 #
-# Edit bug
-#
-def edit_bug(bug, option):
-    return
-
-#
 # Print bug details
 #
-def show_bug(bug, option):
+def show_bug(bug, options):
 
    print 'Bug %s : %s' %(bug.id, bug.title) 
-   if option.brief:
+   if options.brief:
        return
 
    print '[PRIVATE]' if bug.private else '[PUBLIC]', 
@@ -75,9 +67,9 @@ def show_bug(bug, option):
 
    print '\nDescription:\n%s\n' % (bug.description)
 
-   if option.detail:
+   if options.detail:
        print 'Scope(s):'
-       task_list = [i for i in bug.bug_tasks if match_task(i, option)]
+       task_list = [i for i in bug.bug_tasks if match_task(i, options)]
        for task in task_list:
            ms_name = "none"
            assignee = "none"
@@ -104,7 +96,7 @@ def show_bug(bug, option):
 # Search bugs
 #
 def get_buglist(launchpad, o):
-    dist = launchpad.projects[project]
+    dist = launchpad.projects[o.project]
     if o.series is not 'none':
         lp_series = dist.getSeries(name=o.series)
         omit = False
@@ -167,37 +159,50 @@ def get_buglist(launchpad, o):
     return bug_list
 
 def main(args):
-    usage = """%s: bug-id \n%s""" % (sys.argv[0], __doc__)
+    usage = """%s: bug-id(s) %s""" % (sys.argv[0], __doc__)
     parser = OptionParser(usage=usage)
 
     parser.add_option(
-            '-d', '--detail', action='store_true', help='Describe bug in detail.')
+            '-d', '--detail', action='store_true', 
+            help='Describe bug in detail.')
     parser.add_option(
             '-b', '--brief', action='store_true', help='Describe bug in brief.')
+    parser.add_option(
+            '-p', '--projet', type='string', action='store', 
+            help='Specify launchpad project.')
+    parser.add_option(
+            '-e', '--series', type="string", action="store", dest="series", 
+            default="none", help='show bugs with given series')
     parser.add_option(
             '-m', '--milestone', type="string", default="none", action="store", 
             help='show bugs with given milestone')
     parser.add_option(
-            '-e', '--series', type="string", action="store", dest="series", default="none", 
-            help='show bugs with given series')
+            '-a', '--assignee', type="string", action="store", 
+            help='show bug assigned to given id')
     parser.add_option(
-            '-a', '--assignee', type="string", action="store", help='show bug assigned to given id')
+            '-s', '--status', type="string", action="store", 
+            help='show bug with given status in comma separated strings.')
     parser.add_option(
-            '-s', '--status', type="string", action="store", help='show bug with given status. list of comma separated status strings.')
+            '-r', '--reporter', type="string", action="store", 
+            help='show bug with given reporter')
     parser.add_option(
-            '-r', '--reporter', type="string", action="store", help='show bug with given reporter')
+            '-t', '--tags', type="string", action="store", 
+            help='show bugs with given tag. list of comma separted tags e.g., \
+            "analytics, quench"')
     parser.add_option(
-            '-t', '--tags', type="string", action="store", help='show bugs with given tag. tag or list of comma separted tags e.g., "analytics, quench"')
-    parser.add_option(
-            '--notags', type="string", action="store", help='show bug without given tag(s). tag or list of comma separted tags e.g., "blocker, quench"')
+            '--notags', type="string", action="store", 
+            help='show bug without given tag(s). list of comma separted tags')
     parser.add_option(
              '--tagany', action='store_true', help='Bugs matching any tag')
     parser.add_option(
-             '--since', type="string", action="store", help='Create since date: in yyyy-mm-dd format')
+             '--since', type="string", action="store", 
+             help='Create since date: in yyyy-mm-dd format')
     parser.add_option(
-             '--before', type="string", action="store", help='Create before date: in yyyy-mm-dd format')
+             '--before', type="string", action="store", 
+             help='Create before date: in yyyy-mm-dd format')
     parser.add_option(
-             '--modified', type="string", action="store", help='Modified since date: in yyyy-mm-dd format')
+             '--modified', type="string", action="store", 
+             help='Modified since date: in yyyy-mm-dd format')
 
     (options, args) = parser.parse_args(args=args)
 
@@ -206,7 +211,8 @@ def main(args):
     if len(args) == 1:
        tasks = get_buglist(launchpad, options)
        if tasks: 
-           print 'Total bugs: %d' % (tasks._wadl_resource.representation['total_size'])
+           print 'Total bugs: %d' % \
+                (tasks._wadl_resource.representation['total_size'])
            for bug_t in tasks:
                 show_bug(bug_t.bug, options)
     else:

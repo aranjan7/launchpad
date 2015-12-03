@@ -7,7 +7,6 @@
 # This file is script to scrub Contrail bugs on launchpad.
 #
 """Edit Launchpad bug with given ID.
-
 """
 
 
@@ -41,10 +40,7 @@ importance_dict = {
     'WISHLIST' : 'Wishlist'
 }
 
-FIX_COMMITTED = 'Fix Committed'
-FIX_RELEASED = 'Fix Released'
 cachedir = "~/.launchpadlib/cache/"
-project = "juniperopenstack"
 launchpad = None
 dist = None
 
@@ -54,7 +50,6 @@ dist = None
 def get_milestone(ser, milestone_str):
     if (milestone_str is None):
         return None
-
 
     if ser.name == 'trunk':
         allms = dist.active_milestones
@@ -75,18 +70,24 @@ def get_milestone(ser, milestone_str):
 #
 # add a series to a given bug with assignee, milestone fields set
 #
-def edit_series(task, milestone, assignee, importance, status):
+def edit_series(task, milestone, assignee, options):
     if milestone is not None:
         task.milestone_link = milestone
 
-    if status is not None:
-        task.status = status
+    if options.status is not None:
+        task.status = options.status
 
     if assignee.name.lower() != "none":
         task.assignee = assignee
 
-    if importance is not None:
-        task.importance = importance
+    if options.importance is not None:
+        task.importance = options.importance
+
+    print "Editing bug %s, series %s w. assignee %s" %  \
+         (task.bug_link, task.bug_target_name, assignee.name)
+    if options.dryrun:
+        return
+
     task.lp_save()
     return
 
@@ -100,7 +101,12 @@ def set_milestone(bug, options):
    series = dist.getSeries(name=options.series)
    series_url = str(series)
 
-   assignee = launchpad.people[options.assignee]
+   if options.assignee is not None:
+       assignee = launchpad.people[options.assignee]
+       if assignee is None:
+           print 'Invalid assignee %s' % (options.assignee)
+           return
+
    importance = options.importance
    milestone = options.milestone
 
@@ -113,17 +119,16 @@ def set_milestone(bug, options):
                str(task).startswith(series_url)):
            milestone_link = get_milestone(ser=series, milestone_str=milestone)
            if milestone_link or milestone is None:
-               edit_series(task, milestone_link, assignee, importance, 
-                           options.status)
+               edit_series(task, milestone_link, assignee, options)
                if options.series != "all":
                    return True
            else:
-               print "Milestone %s not found for series %s " % 
+               print "Milestone %s not found for series %s " % \
                     (milestone, series)
                return False
 
        # remember data for existing scope
-       if (task.assignee is not None and assignee is None):
+       if (task.assignee is not None and options.assignee is None):
            assignee = task.assignee
        if task.importance is not None:
            importance = task.importance
@@ -133,8 +138,7 @@ def set_milestone(bug, options):
        new_task = bug.addTask(target=series)
        milestone_link = get_milestone(ser=series, milestone_str=milestone)
        if milestone_link:
-            edit_series(new_task, milestone_link, assignee, importance, 
-                        options.status)
+            edit_series(new_task, milestone_link, assignee, options)
 
    return False
 
@@ -148,21 +152,24 @@ def main(args):
     global launchpad 
     global dist 
 
-    usage = """%s: bug-id \n\n%s""" % (sys.argv[0], __doc__)
+    usage = """%s: bug-id %s""" % (sys.argv[0], __doc__)
     parser = OptionParser(usage=usage)
 
     parser.add_option(
-        '-n', '--dry-run', action='store_true',
+        '-n', '--dryrun', action='store_false',
         help='Describe what the script would do without doing it.')
     parser.add_option(
-            '-m', '--milestone', type="string", action="store", 
-            dest="milestone",  help="set milestone")
+            '-p', '--project', type="string", action="store", dest="project",
+            default="juniperopenstack", help="launchpad project to work on")
     parser.add_option(
             '-e', '--series', type="string", action="store", dest="series", 
             help="Edit the specified series. 'all' is valid")
     parser.add_option(
+            '-m', '--milestone', type="string", action="store", 
+            dest="milestone",  help="set milestone")
+    parser.add_option(
             '-a', '--assignee', type="string", action="store", dest="assignee", 
-            default="none", help="assign to launchpad ID")
+            help="assign to launchpad ID")
     parser.add_option(
             '-s', '--status', type="string", action="store", dest="status",
             help="set status of the bug")
@@ -196,7 +203,7 @@ def main(args):
 
     for bug_id in args[1:]:
         launchpad = Launchpad.login_with('hello-world', 'production')
-        dist = launchpad.distributions[project]
+        dist = launchpad.distributions[options.project]
         bug = launchpad.bugs[bug_id]
         #print (dist.lp_attributes)
 
