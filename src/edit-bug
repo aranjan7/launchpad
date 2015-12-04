@@ -83,10 +83,14 @@ def edit_series(task, milestone, assignee, options):
     if options.importance is not None:
         task.importance = options.importance
 
-    print "Editing bug %s, series %s w. assignee %s" %  \
-         (task.bug_link, task.bug_target_name, assignee.name)
-    if options.dryrun:
-        return
+    if options.dryrun or options.verbose:
+        print("Bug: %s series: %s milestone: %s assignee: %s status: %s importance: %s" % 
+            (task.bug_link.rsplit('/',1)[-1], task.bug_target_name, 
+             str(task.milestone_link).rsplit('/',1)[-1], task.assignee.name, 
+             task.status, task.importance))
+        if options.dryrun:
+           return
+
 
     task.lp_save()
     return
@@ -105,7 +109,7 @@ def set_milestone(bug, options):
        assignee = launchpad.people[options.assignee]
        if assignee is None:
            print 'Invalid assignee %s' % (options.assignee)
-           return
+           return False
 
    importance = options.importance
    milestone = options.milestone
@@ -131,7 +135,7 @@ def set_milestone(bug, options):
        if (task.assignee is not None and options.assignee is None):
            assignee = task.assignee
        if task.importance is not None:
-           importance = task.importance
+           options.importance = task.importance
 
    if (options.series != "all" and options.series is not None):
        #create the missing series 
@@ -156,7 +160,7 @@ def main(args):
     parser = OptionParser(usage=usage)
 
     parser.add_option(
-        '-n', '--dryrun', action='store_false',
+        '-n', '--dryrun', action='store_true',
         help='Describe what the script would do without doing it.')
     parser.add_option(
             '-p', '--project', type="string", action="store", dest="project",
@@ -179,6 +183,8 @@ def main(args):
     parser.add_option(
             '-i', '--importance', type="string", action="store", 
             dest="importance", help="assign importance to the bug")
+    parser.add_option(
+         '--verbose', action='store_true', help='Print what you are doing')
 
     (options, args) = parser.parse_args(args=args)
 

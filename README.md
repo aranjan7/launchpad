@@ -5,7 +5,6 @@ Script to edit, view bugs in Launchpad
 
 ```
 >> ./edit-bug --help
-
 Usage: ./edit-bug: bug-id Edit Launchpad bug with given ID.
 
 
@@ -26,6 +25,8 @@ Options:
                          Add comment to the bug
   -i IMPORTANCE, --importance=IMPORTANCE
                         assign importance to the bug
+  --verbose             Run with printing what you are doing
+
 ```
 
 **To view/search bugs use ./show-bug **
