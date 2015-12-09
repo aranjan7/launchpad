@@ -37,15 +37,6 @@ cachedir = "~/.launchpadlib/cache/"
 def printf(format, *args):
     sys.stdout.write(format % args)
 
-#
-# Get matching object from the milestone collection in series
-#
-def get_milestone(ser, milestone_str):
-    for ms in ser.all_milestones:
-        if milestone_str in str(ms):
-            return ms
-    return None
-
 def match_task(task, o):
     if o.series == 'none' or o.series in task.bug_target_name:
         if o.milestone == 'none' or task.milestone.name == o.milestone:
@@ -168,13 +159,13 @@ def main(args):
     parser.add_option(
             '-b', '--brief', action='store_true', help='Describe bug in brief.')
     parser.add_option(
-            '-p', '--projet', type='string', action='store', 
-            help='Specify launchpad project.')
+            '-p', '--projet', type='string', action='store', dest = 'project',
+            default='juniperopenstack', help='Specify launchpad project.')
     parser.add_option(
             '-e', '--series', type="string", action="store", dest="series", 
             default="none", help='show bugs with given series')
     parser.add_option(
-            '-m', '--milestone', type="string", default="none", action="store", 
+            '-m', '--milestone', type="string", action="store", 
             help='show bugs with given milestone')
     parser.add_option(
             '-a', '--assignee', type="string", action="store", 
