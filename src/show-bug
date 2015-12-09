@@ -39,7 +39,11 @@ def printf(format, *args):
 
 def match_task(task, o):
     if o.series == 'none' or o.series in task.bug_target_name:
-        if o.milestone == 'none' or task.milestone.name == o.milestone:
+        if (o.milestone is None or 
+                (task.milestone is not None and 
+                   task.milestone.name == o.milestone) or
+                (o.milestone == "none" and task.milestone is None)
+                ):
             return True
     return False
 
