@@ -116,8 +116,11 @@ def get_buglist(launchpad, o):
            return []
 
     if o.milestone is not None:
+        # here if milestone is "none", search will match with
+        # bugs where milestone is not set.
         vargs['milestone'] = dist.getMilestone(name=o.milestone)
-        if vargs['milestone'] is None:
+        if (vargs['milestone'] is None and 
+                o.milestone.lower() != "none"):
            print 'Milestone %s is invalid' % (o.milestone)
            return []
 
