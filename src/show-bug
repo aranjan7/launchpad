@@ -37,12 +37,12 @@ cachedir = "~/.launchpadlib/cache/"
 def printf(format, *args):
     sys.stdout.write(format % args)
 
-def match_task(task, o):
-    if o.series == 'none' or o.series in task.bug_target_name:
-        if (o.milestone is None or 
+def match_task(task, options):
+    if options.series == 'none' or options.series in task.bug_target_name:
+        if (options.milestone is None or 
                 (task.milestone is not None and 
-                   task.milestone.name == o.milestone) or
-                (o.milestone.lower() == "none" and task.milestone is None)):
+                   task.milestone.name == options.milestone) or
+                (options.milestone.lower() == "none" and task.milestone is None)):
             return True
     return False
 
@@ -217,7 +217,7 @@ def main(args):
     if len(args) == 1:
        tasks = get_buglist(launchpad, options)
        if tasks: 
-           print 'Total bugs: %d' % \
+           print 'Total bugs: %d (Count will not match total bugs displayed, if search criteria has -m = "null")' % \
                 (tasks._wadl_resource.representation['total_size'])
            for bug_t in tasks:
                 show_bug(bug_t.bug, options)
