@@ -42,8 +42,7 @@ def match_task(task, o):
         if (o.milestone is None or 
                 (task.milestone is not None and 
                    task.milestone.name == o.milestone) or
-                (o.milestone == "none" and task.milestone is None)
-                ):
+                (o.milestone.lower() == "none" and task.milestone is None)):
             return True
     return False
 
@@ -51,6 +50,33 @@ def match_task(task, o):
 # Print bug details
 #
 def show_bug(bug, options):
+
+   ps = 'Scope(s):'
+   task_list = [i for i in bug.bug_tasks if match_task(i, options)]
+   for task in task_list:
+       ms_name = "none"
+       assignee = "none"
+       if task.milestone is not None:
+          ms_name = task.milestone.name
+       if task.assignee is not None:
+          assignee = task.assignee.name
+
+       ps += "Series: {0:25} Assigned: {1:15} Importance: {2:14}  \
+             Milestone: {3:12} Status: {4:20} \n".format(
+                                task.bug_target_name, assignee, 
+                                task.importance, ms_name, task.status)
+
+   if options.detail:
+       # print audit trail
+       i = 0
+       ps += '\nActivities:'
+       for act in bug.messages:
+           if i is not 0:
+               ps += '[%d]: -- %s ' % (i, act.content)
+           i += 1
+
+   if not task_list:
+      return
 
    print 'Bug %s : %s' %(bug.id, bug.title) 
    if options.brief:
@@ -63,28 +89,8 @@ def show_bug(bug, options):
    print '\nDescription:\n%s\n' % (bug.description)
 
    if options.detail:
-       print 'Scope(s):'
-       task_list = [i for i in bug.bug_tasks if match_task(i, options)]
-       for task in task_list:
-           ms_name = "none"
-           assignee = "none"
-           if task.milestone is not None:
-              ms_name = task.milestone.name
-           if task.assignee is not None:
-              assignee = task.assignee.name
+      print ps
 
-           print 'Series: {0:25} Assigned: {1:15} Importance: {2:14}  \
-                 Milestone: {3:12} Status: {4:20}'.format(
-                                    task.bug_target_name, assignee, 
-                                    task.importance, ms_name, task.status)
-
-       # print audit trail
-       i = 0
-       print '\nActivities:'
-       for act in bug.messages:
-           if i is not 0:
-               print '[%d]: -- %s ' % (i, act.content)
-           i += 1
    return 
 
 #
@@ -116,8 +122,10 @@ def get_buglist(launchpad, o):
            return []
 
     if o.milestone is not None:
-        # here if milestone is "none", search will match with
-        # bugs where milestone is not set.
+        # here if milestone is "none", search should match with
+        # bugs where milestone is not set. However, it doesn't
+        # work because of https://bugs.launchpad.net/launchpad/+bug/70709
+        #
         vargs['milestone'] = dist.getMilestone(name=o.milestone)
         if (vargs['milestone'] is None and 
                 o.milestone.lower() != "none"):
