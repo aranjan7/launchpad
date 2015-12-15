@@ -43,7 +43,11 @@ def match_task(task, options):
                 (task.milestone is not None and 
                    task.milestone.name == options.milestone) or
                 (options.milestone.lower() == "none" and task.milestone is None)):
-            return True
+            # Filter unassigned bugs if "-a unassigned" is specified in cli.
+            if (options.assignee is None or 
+                    options.assignee.lower() != "unassigned" or
+                    task.assignee is None): 
+                return True
     return False
 
 #
@@ -116,7 +120,8 @@ def get_buglist(launchpad, o):
 
     if o.assignee is not None:
         try:
-           vargs['assignee'] = launchpad.people[o.assignee]
+           if o.assignee.lower() != "unassigned":
+               vargs['assignee'] = launchpad.people[o.assignee]
         except KeyError:
            print 'User %s not found' % (o.assignee)
            return []
@@ -217,7 +222,7 @@ def main(args):
     if len(args) == 1:
        tasks = get_buglist(launchpad, options)
        if tasks: 
-           print 'Total bugs: %d (Count will not match total bugs displayed, if search criteria has -m = "null")' % \
+           print 'Total bugs: %d (Count will not match total bugs displayed, if search criteria has -m = "none")' % \
                 (tasks._wadl_resource.representation['total_size'])
            for bug_t in tasks:
                 show_bug(bug_t.bug, options)

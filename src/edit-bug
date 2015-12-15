@@ -48,10 +48,10 @@ dist = None
 # Get matching object from the milestone collection in series
 #
 def get_milestone(ser, milestone_str):
-    if (milestone_str is None):
+    if (milestone_str is None or ser is None):
         return None
 
-    if ser.name == 'trunk':
+    if 'trunk' in str(ser):
         allms = dist.active_milestones
         for ms in allms:
            if milestone_str in str(ms):
@@ -85,11 +85,11 @@ def edit_series(task, milestone, assignee, options):
 
     if options.dryrun or options.verbose:
         print("Bug: %s series: %s milestone: %s assignee: %s status: %s importance: %s" % 
-            (task.bug_link.rsplit('/',1)[-1], task.bug_target_name, 
+            (task.bug_link.rsplit('/',1)[-1], task.bug_target_name.rsplit('/')[-1], 
              str(task.milestone_link).rsplit('/',1)[-1], task.assignee.name, 
              task.status, task.importance))
 
-    if options.dryrun is not None:
+    if not options.dryrun:
         task.lp_save()
 
     return
@@ -100,7 +100,6 @@ def edit_series(task, milestone, assignee, options):
 # 'assignee' & 'importance' field from other existing series
 #
 def set_milestone(bug, options):
-   #if (options.series is not None and options.series != "all"):
    series = dist.getSeries(name=options.series)
    series_url = str(series)
 
@@ -114,30 +113,46 @@ def set_milestone(bug, options):
 
    importance = options.importance
    milestone = options.milestone
+   trunk_present = False
 
    for task in bug.bug_tasks:
        # 
        # Launchpad doesn't like it if you edit both default and 
        # 'trunk' series so skip trunk
        #
-       if ((options.series == "all" and "trunk" not in str(task)) or 
+       if ((options.series == "all" ) or 
                str(task).startswith(series_url)):
+
+           task_name = task.bug_target_name.rsplit('/')[-1]
+           if (task_name == 'trunk'):
+               trunk_present = True
+
+           if series is None:
+               series = dist.getSeries(name=task_name)
+               if not series:
+                  continue
+
            milestone_link = get_milestone(ser=series, milestone_str=milestone)
-           if milestone_link or milestone is None:
-               edit_series(task, milestone_link, assignee, options)
-               if options.series != "all":
-                   return True
-           else:
+
+           edit_series(task, milestone_link, assignee, options)
+           if options.series != "all":
+               return True
+
+           if not milestone_link and milestone is not None and series:
                print "Milestone %s not found for series %s " % \
                     (milestone, series)
-               return False
 
-   if (options.series != "all" and options.series is not None):
-       #create the missing series 
-       new_task = bug.addTask(target=series)
-       milestone_link = get_milestone(ser=series, milestone_str=milestone)
-       if milestone_link:
-            edit_series(new_task, milestone_link, assignee, options)
+   # We come here in case of -e = all or we need to create new bug task
+   # In above loop we never edit the base task. We create a 'trunk'
+   # task as a to track the bug status as a policy.
+   if (options.series == 'all' and not trunk_present):
+       series = dist.getSeries(name="trunk")
+
+   if (options.series != "all" or not trunk_present):
+      #create the missing series 
+      new_task = bug.addTask(target=series)
+      milestone_link = get_milestone(ser=series, milestone_str=milestone)
+      edit_series(new_task, milestone_link, assignee, options)
 
    return False
 
@@ -162,7 +177,7 @@ def main(args):
             default="juniperopenstack", help="launchpad project to work on")
     parser.add_option(
             '-e', '--series', type="string", action="store", dest="series", 
-            help="Edit the specified series. 'all' is valid")
+            default="all", help="Edit or create series. default is 'all'")
     parser.add_option(
             '-m', '--milestone', type="string", action="store", 
             dest="milestone",  help="set milestone")
