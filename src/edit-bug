@@ -4,7 +4,7 @@
 #
 # Author: Ashish Ranjan
 #
-# This file is script to scrub Contrail bugs on launchpad.
+# Script to scrub Contrail bugs on launchpad.
 #
 """Edit Launchpad bug with given ID.
 """
@@ -94,12 +94,13 @@ def edit_series(task, milestone, assignee, options):
 
     return
 
-#
-# Function to set milestone to existing series (aka 'task') in the bug
-# If the specified series is not linked to the bug, link it and set
-# 'assignee' & 'importance' field from other existing series
-#
-def set_milestone(bug, options):
+def edit_bug(bug, options):
+   """ Function to set milestone to existing series (aka 'task') in the bug
+
+   If the specified series is not linked to the bug, link it and set
+   'assignee' & 'importance' field from other existing series
+   """
+
    series = dist.getSeries(name=options.series)
    series_url = str(series)
 
@@ -114,8 +115,9 @@ def set_milestone(bug, options):
    importance = options.importance
    milestone = options.milestone
    trunk_present = False
+   bugtasks = bug.bug_tasks
 
-   for task in bug.bug_tasks:
+   for task in bugtasks:
        # 
        # Launchpad doesn't like it if you edit both default and 
        # 'trunk' series so skip trunk
@@ -228,7 +230,7 @@ def main(args):
         
         # Find series object
         if options.series is not None:
-            set_milestone(bug, options)
+            edit_bug(bug, options)
 
     return 0
 
