@@ -23,7 +23,6 @@ def delete_scope(bug, options):
 
    bugtasks = bug.bug_tasks
    for task in bugtasks:
-       print ("in task %s" % str(task))
        if task.target.name == options.series:
           if options.dryrun:
               print ("Deleting series %s for bug %d " % 

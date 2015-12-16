@@ -85,7 +85,7 @@ def edit_series(task, milestone, assignee, options):
 
     if options.dryrun or options.verbose:
         print("Bug: %s series: %s milestone: %s assignee: %s status: %s importance: %s" % 
-            (task.bug_link.rsplit('/',1)[-1], task.bug_target_name.rsplit('/')[-1], 
+            (task.bug_link.rsplit('/',1)[-1], task.target.name,
              str(task.milestone_link).rsplit('/',1)[-1], task.assignee.name, 
              task.status, task.importance))
 
@@ -101,8 +101,6 @@ def edit_bug(bug, options):
    'assignee' & 'importance' field from other existing series
    """
 
-   series = dist.getSeries(name=options.series)
-   series_url = str(series)
 
    if options.assignee is not None:
        assignee = launchpad.people[options.assignee]
@@ -123,16 +121,15 @@ def edit_bug(bug, options):
        # 'trunk' series so skip trunk
        #
        if ((options.series == "all" ) or 
-               str(task).startswith(series_url)):
+               task.target.name == options.series):
 
-           task_name = task.bug_target_name.rsplit('/')[-1]
+           task_name = task.target.name
            if (task_name == 'trunk'):
                trunk_present = True
 
-           if series is None:
-               series = dist.getSeries(name=task_name)
-               if not series:
-                  continue
+           series = dist.getSeries(name=task_name)
+           if not series:
+               continue
 
            milestone_link = get_milestone(ser=series, milestone_str=milestone)
 
@@ -147,11 +144,14 @@ def edit_bug(bug, options):
    # We come here in case of -e = all or we need to create new bug task
    # In above loop we never edit the base task. We create a 'trunk'
    # task as a to track the bug status as a policy.
+   series = None
    if (options.series == 'all' and not trunk_present):
        series = dist.getSeries(name="trunk")
 
    if (options.series != "all" or not trunk_present):
       #create the missing series 
+      if series is None:
+          series = dist.getSeries(name=options.series)
       new_task = bug.addTask(target=series)
       milestone_link = get_milestone(ser=series, milestone_str=milestone)
       edit_series(new_task, milestone_link, assignee, options)
