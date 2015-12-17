@@ -125,12 +125,12 @@ def main(args):
         return -1
 
     nseries = dist.getSeries(name="trunk")
-    if series is not None:
+    if nseries is not None:
         new_task = bug.addTask(target=nseries)
-        edit_task(task=new_task, options=options)
+        edit_series(task=new_task, options=options)
 
     new_task = bug.addTask(target=series)
-    edit_task(task=new_task, options=options)
+    edit_series(task=new_task, options=options)
         
     print "Created bug %d" % bug.id
     return 0

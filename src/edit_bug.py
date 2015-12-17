@@ -70,7 +70,7 @@ def get_milestone(ser, milestone_str):
 #
 # add a series to a given bug with assignee, milestone fields set
 #
-def edit_series(task, milestone = None, options):
+def edit_series(task, milestone, options):
 
     if options.assignee is not None:
         assignee = launchpad.people[options.assignee]
