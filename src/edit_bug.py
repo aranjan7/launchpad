@@ -114,17 +114,20 @@ def edit_bug(bug, options):
    trunk_present = False
    bugtasks = bug.bug_tasks
 
+   series_list = [j.strip() for j in options.series.split(" ")]
+
    for task in bugtasks:
        # 
        # Launchpad doesn't like it if you edit both default and 
        # 'trunk' series so skip trunk
        #
-       if ((options.series == "all" ) or 
-               task.target.name == options.series):
+       if ("all" in series_list or 
+               task.target.name in series_list):
 
            task_name = task.target.name
            if (task_name == 'trunk'):
                trunk_present = True
+
 
            series = dist.getSeries(name=task_name)
            if not series:
@@ -133,7 +136,12 @@ def edit_bug(bug, options):
            milestone_link = get_milestone(ser=series, milestone_str=milestone)
 
            edit_series(task, milestone_link, options)
-           if options.series != "all":
+           try:
+               series_list.remove(task_name)
+           except ValueError:
+               pass
+
+           if not series_list:
                return True
 
            if not milestone_link and milestone is not None and series:
@@ -143,14 +151,16 @@ def edit_bug(bug, options):
    # We come here in case of -e = all or we need to create new bug task
    # In above loop we never edit the base task. We create a 'trunk'
    # task as a to track the bug status as a policy.
-   series = None
-   if (options.series == 'all' and not trunk_present):
-       series = dist.getSeries(name="trunk")
+   if "all" in series_list: 
+       if not trunk_present:
+          series_list.append("trunk")
+       series_list.remove("all")
 
-   if (options.series != "all" or not trunk_present):
-      #create the missing series 
+   # Create remaining scope aka task
+   for series_name in series_list:
+      series = dist.getSeries(name=series_name)
       if series is None:
-          series = dist.getSeries(name=options.series)
+          continue
       new_task = bug.addTask(target=series)
       milestone_link = get_milestone(ser=series, milestone_str=milestone)
       edit_series(new_task, milestone_link, options)
@@ -178,7 +188,7 @@ def main(args):
             default="juniperopenstack", help="launchpad project to work on")
     parser.add_option(
             '-e', '--series', type="string", action="store", dest="series", 
-            default="all", help="Edit or create series. default is 'all'")
+            default="all", help="Edit or create list series. default is 'all'")
     parser.add_option(
             '-m', '--milestone', type="string", action="store", 
             dest="milestone",  help="set milestone")
@@ -218,7 +228,7 @@ def main(args):
             print 'Valid values for importance field are %s' % (imp_l)
             return []
 
-    launchpad = Launchpad.login_with('hello-world', 'production')
+    launchpad = Launchpad.login_with('edit_bug.py', 'production')
     dist = launchpad.distributions[options.project]
     for bug_id in args[1:]:
         bug = launchpad.bugs[bug_id]
