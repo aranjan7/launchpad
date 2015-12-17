@@ -70,7 +70,15 @@ def get_milestone(ser, milestone_str):
 #
 # add a series to a given bug with assignee, milestone fields set
 #
-def edit_series(task, milestone, assignee, options):
+def edit_series(task, milestone = None, options):
+
+    if options.assignee is not None:
+        assignee = launchpad.people[options.assignee]
+        if assignee is None:
+            print 'Error: Invalid assignee %s' % (options.assignee)
+    else:
+        assignee = None
+
     if milestone is not None:
         task.milestone_link = milestone
 
@@ -101,15 +109,6 @@ def edit_bug(bug, options):
    'assignee' & 'importance' field from other existing series
    """
 
-
-   if options.assignee is not None:
-       assignee = launchpad.people[options.assignee]
-       if assignee is None:
-           print 'Invalid assignee %s' % (options.assignee)
-           return False
-   else:
-       assignee = None
-
    importance = options.importance
    milestone = options.milestone
    trunk_present = False
@@ -133,7 +132,7 @@ def edit_bug(bug, options):
 
            milestone_link = get_milestone(ser=series, milestone_str=milestone)
 
-           edit_series(task, milestone_link, assignee, options)
+           edit_series(task, milestone_link, options)
            if options.series != "all":
                return True
 
@@ -154,7 +153,7 @@ def edit_bug(bug, options):
           series = dist.getSeries(name=options.series)
       new_task = bug.addTask(target=series)
       milestone_link = get_milestone(ser=series, milestone_str=milestone)
-      edit_series(new_task, milestone_link, assignee, options)
+      edit_series(new_task, milestone_link, options)
 
    return False
 
@@ -219,11 +218,10 @@ def main(args):
             print 'Valid values for importance field are %s' % (imp_l)
             return []
 
+    launchpad = Launchpad.login_with('hello-world', 'production')
+    dist = launchpad.distributions[options.project]
     for bug_id in args[1:]:
-        launchpad = Launchpad.login_with('hello-world', 'production')
-        dist = launchpad.distributions[options.project]
         bug = launchpad.bugs[bug_id]
-        #print (dist.lp_attributes)
 
         if options.comment is not None:
             set_comment(bug, options.comment)

@@ -4,7 +4,7 @@
 #
 # Author: Ashish Ranjan
 #
-# This file is script to scrub Contrail bugs on launchpad.
+# Script to show juniperopenstack bugs on launchpad.
 #
 
 """Show or search launchpad bug(s)
@@ -55,6 +55,11 @@ def match_task(task, options):
 # Print bug details
 #
 def show_bug(bug, options):
+   """ Show information about the bug
+   """
+
+   if bug is None:
+       return
 
    ps = 'Scope(s):'
    task_list = [i for i in bug.bug_tasks if match_task(i, options)]
@@ -205,7 +210,7 @@ def main(args):
             '--notags', type="string", action="store", 
             help='show bug without given tag(s). list of comma separted tags')
     parser.add_option(
-             '--tagany', action='store_true', help='Bugs matching any tag')
+             '--tagany', action='store_true', help='Bugs matching one of the tags')
     parser.add_option(
              '--since', type="string", action="store", 
              help='Create since date: in yyyy-mm-dd format')
