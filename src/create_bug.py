@@ -7,7 +7,7 @@
 # Script to create juniperopenstack bugs on launchpad.
 #
 
-""" Create launchpad bug(s)
+"""Create launchpad bug(s)
 """
 import os
 import sys
@@ -52,7 +52,7 @@ def get_bug_descr(options):
     return desc
 
 def main(args):
-    usage = """%s:  title %s -t [tags]""" % (sys.argv[0], __doc__)
+    usage = """%s: bug-title -t [tags] \n%s""" % (sys.argv[0], __doc__)
     parser = OptionParser(usage=usage)
 
     parser.add_option(

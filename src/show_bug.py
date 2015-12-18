@@ -175,7 +175,7 @@ def get_buglist(launchpad, o):
     return bug_list
 
 def main(args):
-    usage = """%s: bug-id(s) %s""" % (sys.argv[0], __doc__)
+    usage = """%s: bug-id(s) \n%s""" % (sys.argv[0], __doc__)
     parser = OptionParser(usage=usage)
 
     parser.add_option(

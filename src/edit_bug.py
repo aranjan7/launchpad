@@ -185,7 +185,7 @@ def main(args):
     global launchpad 
     global dist 
 
-    usage = """%s: bug-id %s""" % (sys.argv[0], __doc__)
+    usage = """%s: bug-id \n%s""" % (sys.argv[0], __doc__)
     parser = OptionParser(usage=usage)
 
     parser.add_option(
