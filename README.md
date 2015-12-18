@@ -1,5 +1,5 @@
 # launchpad
-Script to edit, view bugs in Launchpad
+Script to view, edit and create bugs in Launchpad
 
 
 **To view/search bugs use ./show_bug.py **

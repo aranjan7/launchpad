@@ -38,7 +38,9 @@ def printf(format, *args):
     sys.stdout.write(format % args)
 
 def match_task(task, options):
-    if options.series == 'none' or options.series in task.bug_target_name:
+    """ Further grep the bugs for fields not supported by searchTask
+    """
+    if (options.series == 'none' or options.series == task.target.name):
         if (options.milestone is None or 
                 (task.milestone is not None and 
                    task.milestone.name == options.milestone) or
@@ -54,10 +56,18 @@ def match_task(task, options):
 # Print bug details
 #
 def show_bug(bug, options):
-   """ Show information about the bug
+   """ Print information about the bug
    """
 
    if bug is None:
+       return
+
+   ''' To speedup in case of simple search print and return from here
+   '''
+
+   if (options.brief and options.milestone is None and 
+           (options.assignee is None or options.assignee.lower() != "unassigned")):
+       print 'Bug %s : %s' %(bug.id, bug.title) 
        return
 
    ps = 'Scope(s):'

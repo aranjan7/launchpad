@@ -52,11 +52,12 @@ def get_bug_descr(options):
     return desc
 
 def main(args):
+
     usage = """%s: bug-title -t [tags] \n%s""" % (sys.argv[0], __doc__)
     parser = OptionParser(usage=usage)
 
     parser.add_option(
-            '-p', '--projet', type='string', action='store', 
+            '-p', '--project', type='string', action='store', 
             default='juniperopenstack', help='Specify launchpad project.')
     parser.add_option(
             '-e', '--series', type="string", action="store", 
@@ -66,6 +67,9 @@ def main(args):
             help='bug assigned to')
     parser.add_option( '-t', '--tags', type="string", action="store", 
             help='space separated list of tags')
+    parser.add_option(
+            '-m', '--milestone', type="string", action="store", 
+            dest="milestone",  help="set milestone")
     parser.add_option('-i', '--importance', type="string", action="store", 
             help='set importance of the bug')
     parser.add_option('--public', action="store_true", 
@@ -73,11 +77,14 @@ def main(args):
     parser.add_option('--security', action="store_true", 
             help='set bug as security vulnerability')
     parser.add_option('--file', action="store", help='get bug description from file')
-    #parser.add_option('-', dest='stdin', action="store_true", 
-            #help='get bug description from stdin')
     parser.add_option(
             '-s', '--status', type="string", action="store", 
             help="set status of the bug")
+    parser.add_option(
+        '-n', '--dryrun', action='store_true',
+        help='Describe what the script would do without doing it.')
+    parser.add_option(
+         '--verbose', action='store_true', help='Print what you are doing')
 
     (options, args) = parser.parse_args(args=args)
     if (len(args) < 2):
@@ -100,38 +107,29 @@ def main(args):
        setattr(options, "stdin", True)
 
     bug_desc = get_bug_descr(options)
-    print "Description: \n%s " % bug_desc
-    return 0
    
     itype = "Private"
     if options.public:
         itype = "Public"
 
-    launchpad = Launchpad.login_with('create_bug', 'production')
-    dist = launchpad.distributions[options.project]
+    edit_bug.launchpad = Launchpad.login_with('create_bug', 'production')
+    edit_bug.dist = edit_bug.launchpad.distributions[options.project]
 
-    if options.series is not None:
-        series = dist.getSeries(name=options.series)
-        if series is None:
-            print "series %s is invalid" % options.series
-            return -1
-
-    bug = launchpad.bugs.createBug(description=bug_desc, tags=options.tags, 
+    series_list = [j.strip() for j in options.series.split(" ")]
+    if 'all' not in series_list:
+        if 'trunk' not in series_list:
+            options.series += " trunk"
+        
+    bug = edit_bug.launchpad.bugs.createBug(description=bug_desc, tags=options.tags, 
             information_type = itype, security_related = options.security,
-            title = bug_title, target = dist)
+            title = bug_title, target = edit_bug.dist)
 
     if bug is None:
         print "Error creating bug"
         return -1
 
-    nseries = dist.getSeries(name="trunk")
-    if nseries is not None:
-        new_task = bug.addTask(target=nseries)
-        edit_series(task=new_task, options=options)
+    edit_bug.edit_bug(bug, options)
 
-    new_task = bug.addTask(target=series)
-    edit_series(task=new_task, options=options)
-        
     print "Created bug %d" % bug.id
     return 0
 
