@@ -102,8 +102,14 @@ def edit_series(task, milestone, options):
 
     return
 
-def edit_bug(bug, options):
-   """ Function to set milestone to existing series (aka 'task') in the bug
+def add_comment(bug, options):
+   if options.comment is not None:
+      bug.newMessage(content=options.comment)
+      bug.lp_save()
+   return
+
+def edit_bug_tasks(bug, options):
+   """ Function to set milestone etc to existing task(s)
 
    If the specified series is not linked to the bug, link it and set
    'assignee' & 'importance' field from other existing series
@@ -175,19 +181,12 @@ def edit_bug(bug, options):
 
    return False
 
-def set_comment(bug, comment):
-   bug.newMessage(content=comment)
-   bug.lp_save()
-   return
-       
-
-def main(args):
-    global launchpad 
-    global dist 
-
-    usage = """%s: bug-id \n%s""" % (sys.argv[0], __doc__)
-    parser = OptionParser(usage=usage)
-
+def edit_bug(bug, options):
+    edit_bug_tasks(bug, options)
+    add_comment(bug, options)
+    return
+    
+def opt_parser_init(parser):
     parser.add_option(
         '-n', '--dryrun', action='store_true',
         help='Describe what the script would do without doing it.')
@@ -215,6 +214,16 @@ def main(args):
     parser.add_option(
          '--verbose', action='store_true', help='Print what you are doing')
 
+    return
+
+def main(args):
+    global launchpad 
+    global dist 
+
+    usage = """%s: bug-id \n%s""" % (sys.argv[0], __doc__)
+    parser = OptionParser(usage=usage)
+    opt_parser_init(parser)
+    
     (options, args) = parser.parse_args(args=args)
 
     if len(args) < 2:
@@ -241,12 +250,7 @@ def main(args):
     for bug_id in args[1:]:
         bug = launchpad.bugs[bug_id]
 
-        if options.comment is not None:
-            set_comment(bug, options.comment)
-        
-        # Find series object
-        if options.series is not None:
-            edit_bug(bug, options)
+        edit_bug(bug, options)
 
     return 0
 

@@ -56,35 +56,14 @@ def main(args):
     usage = """%s: bug-title -t [tags] \n%s""" % (sys.argv[0], __doc__)
     parser = OptionParser(usage=usage)
 
-    parser.add_option(
-            '-p', '--project', type='string', action='store', 
-            default='juniperopenstack', help='Specify launchpad project.')
-    parser.add_option(
-            '-e', '--series', type="string", action="store", 
-            default="all", help="set the scope on which bug was found ")
-    parser.add_option(
-            '-a', '--assignee', type="string", action="store", 
-            help='bug assigned to')
-    parser.add_option( '-t', '--tags', type="string", action="store", 
-            help='space separated list of tags')
-    parser.add_option(
-            '-m', '--milestone', type="string", action="store", 
-            dest="milestone",  help="set milestone")
-    parser.add_option('-i', '--importance', type="string", action="store", 
-            help='set importance of the bug')
+    edit_bug.opt_parser_init(parser)
+
     parser.add_option('--public', action="store_true", 
             help='set bug as public')
     parser.add_option('--security', action="store_true", 
             help='set bug as security vulnerability')
-    parser.add_option('--file', action="store", help='get bug description from file')
-    parser.add_option(
-            '-s', '--status', type="string", action="store", 
-            help="set status of the bug")
-    parser.add_option(
-        '-n', '--dryrun', action='store_true',
-        help='Describe what the script would do without doing it.')
-    parser.add_option(
-         '--verbose', action='store_true', help='Print what you are doing')
+    parser.add_option('--file', action="store", 
+            help='bug description file')
 
     (options, args) = parser.parse_args(args=args)
     if (len(args) < 2):
@@ -120,9 +99,18 @@ def main(args):
         if 'trunk' not in series_list:
             options.series += " trunk"
         
-    bug = edit_bug.launchpad.bugs.createBug(description=bug_desc, tags=options.tags, 
-            information_type = itype, security_related = options.security,
-            title = bug_title, target = edit_bug.dist)
+    if options.dryrun or options.verbose:
+       print "Creating %s bug Title: %s\n" % (itype, bug_title)
+       print "Tags: %s" % options.tags
+       print "Description %s\n" % bug_desc
+
+    if options.dryrun:
+       return 0
+
+    bug = edit_bug.launchpad.bugs.createBug(description=bug_desc, 
+            tags=options.tags, information_type = itype, 
+            security_related = options.security, title = bug_title, 
+            target = edit_bug.dist)
 
     if bug is None:
         print "Error creating bug"
