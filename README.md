@@ -2,7 +2,7 @@
 Script to view, edit and create bugs in Launchpad
 
 
-**To view/search bugs use ./show_bug.py **
+*To view/search bugs use ./show_bug.py *
 
 ```
 >> ./show_bug.py --help
@@ -37,7 +37,7 @@ Options:
 
 ```
 
-**To edit a bug use 'edit_bug.py' **
+*To edit a bug use 'edit_bug.py' *
 
 ```
 ./edit_bug.py --help
@@ -66,29 +66,34 @@ Options:
 
 ```
 
-**To create bug use ./create_bug.py **
+*To create bug use ./create_bug.py *
 
 ```
 >>  ./create_bug.py --help
 Usage: ./create_bug.py: bug-title -t [tags] 
 Create launchpad bug(s)
 
-
 Options:
   -h, --help            show this help message and exit
-  -p PROJET, --projet=PROJET
-                        Specify launchpad project.
+  -n, --dryrun          Describe what the script would do without doing it.
+  -p PROJECT, --project=PROJECT
+                        launchpad project to work on
   -e SERIES, --series=SERIES
-                        set the scope on which bug was found
+                        Edit or create list series. default is 'all'
+  -m MILESTONE, --milestone=MILESTONE
+                        set milestone
   -a ASSIGNEE, --assignee=ASSIGNEE
-                        bug assigned to
-  -t TAGS, --tags=TAGS  space separated list of tags
-  -i IMPORTANCE, --importance=IMPORTANCE
-                        set importance of the bug
-  --public              set bug as public
-  --security            set bug as security vulnerability
-  --file=FILE           get bug description from file
+                        assign to launchpad ID
   -s STATUS, --status=STATUS
                         set status of the bug
+  -c COMMENT, --comment=COMMENT
+                         Add comment to the bug
+  -i IMPORTANCE, --importance=IMPORTANCE
+                        assign importance to the bug
+  --verbose             Print what you are doing
+  --public              set bug as public
+  --security            set bug as security vulnerability
+  --file=FILE           bug description file
+
 
 ```
