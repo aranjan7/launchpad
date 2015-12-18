@@ -2,7 +2,7 @@
 Script to view, edit and create bugs in Launchpad
 
 
-*To view/search bugs use ./show_bug.py *
+*To view/search bugs use ./show_bug.py*
 
 ```
 >> ./show_bug.py --help
@@ -37,7 +37,7 @@ Options:
 
 ```
 
-*To edit a bug use 'edit_bug.py' *
+*To edit a bug use 'edit_bug.py'*
 
 ```
 ./edit_bug.py --help
@@ -66,7 +66,7 @@ Options:
 
 ```
 
-*To create bug use ./create_bug.py *
+*To create bug use ./create_bug.py*
 
 ```
 >>  ./create_bug.py --help
