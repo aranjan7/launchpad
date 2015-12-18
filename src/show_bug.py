@@ -12,7 +12,6 @@
 
 import os
 import sys
-import editbug
 
 from optparse import OptionParser
 

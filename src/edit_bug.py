@@ -121,13 +121,12 @@ def edit_bug(bug, options):
        # Launchpad doesn't like it if you edit both default and 
        # 'trunk' series so skip trunk
        #
+       task_name = task.target.name
        if ("all" in series_list or 
                task.target.name in series_list):
 
-           task_name = task.target.name
            if (task_name == 'trunk'):
                trunk_present = True
-
 
            series = dist.getSeries(name=task_name)
            if not series:
@@ -147,6 +146,15 @@ def edit_bug(bug, options):
            if not milestone_link and milestone is not None and series:
                print "Milestone %s not found for series %s " % \
                     (milestone, series)
+
+       if (task_name == options.project or task_name == 'trunk'):
+           if options.assignee is None and task.assignee:
+               options.assignee = task.assignee.name
+           if options.importance is None:
+               options.importance = task.importance 
+           if options.status is None:
+               options.status = task.status
+
 
    # We come here in case of -e = all or we need to create new bug task
    # In above loop we never edit the base task. We create a 'trunk'
