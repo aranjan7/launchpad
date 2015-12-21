@@ -88,10 +88,13 @@ def show_bug(bug, options):
    if options.detail:
        # print audit trail
        i = 0
-       ps += '\nActivities:'
+       ps += "\nActivities:"
        for act in bug.messages:
            if i is not 0:
-               ps += '[%d]: -- %s ' % (i, act.content)
+               ps += "\n-------------------------------------------------------------------------------\n"
+               ps += '[%d]: ' % i
+               ps += act.owner_link.rsplit('/',1)[-1] + ": wrote on " + str(act.date_created) + ":  " + act.subject
+               ps += '\n%s \n ' % act.content
            i += 1
 
    if not task_list:
@@ -229,18 +232,24 @@ def main(args):
     parser.add_option(
              '--modified', type="string", action="store", 
              help='Modified since date: in yyyy-mm-dd format')
+    """
+    parser.add_option(
+             '--edit', dest='edit_action', type="string", action="store", 
+             help='execute ./edit_bug.py on the search result')
+    """
 
     (options, args) = parser.parse_args(args=args)
 
     launchpad = Launchpad.login_with('hello-world', 'production')
 
     if len(args) == 1:
-       tasks = get_buglist(launchpad, options)
-       if tasks: 
+       bug_list = get_buglist(launchpad, options)
+       if bug_list: 
            print 'Total bugs: %d (Count will not match total bugs displayed, if search criteria has -m = "none")' % \
-                (tasks._wadl_resource.representation['total_size'])
-           for bug_t in tasks:
-                show_bug(bug_t.bug, options)
+                (bug_list._wadl_resource.representation['total_size'])
+           for bug_t in bug_list:
+               show_bug(bug_t.bug, options)
+           """ Todo: support edit bug here. """
     else:
        for bug in args[1:]:
           show_bug(launchpad.bugs[bug], options)

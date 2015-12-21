@@ -3,17 +3,17 @@
 This is colletion of script to view, edit and create bugs in Launchpad.
 
 Prerequisite
---------------
+============
 
 Install *launchpadlib* first.
 
 ``` pip install launchpadlib ```
 
-Or
+Or on Ubuntu:
 
 ``` sudo apt-get install python-launchpadlib ```
 
-For more detail visit [Launchpad lib page](https://help.launchpad.net/API/launchpadlib)
+For more detail visit [Launchpad lib page](https://help.launchpad.net/API/launchpadlib).
 
 ---
 

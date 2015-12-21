@@ -158,8 +158,6 @@ def edit_bug_tasks(bug, options):
                options.assignee = task.assignee.name
            if options.importance is None:
                options.importance = task.importance 
-           if options.status is None:
-               options.status = task.status
 
 
    # We come here in case of -e = all or we need to create new bug task
