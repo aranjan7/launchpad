@@ -102,10 +102,14 @@ def edit_series(task, milestone, options):
 
     return
 
-def add_comment(bug, options):
+def add_comment_tag(bug, options):
    if options.comment is not None:
       bug.newMessage(content=options.comment)
-      bug.lp_save()
+   if options.tags is not None:
+      tag_list = [j.strip() for j in options.tags.split(" ")]
+      bug.tags = tag_list
+
+   bug.lp_save()
    return
 
 def edit_bug_tasks(bug, options):
@@ -181,7 +185,8 @@ def edit_bug_tasks(bug, options):
 
 def edit_bug(bug, options):
     edit_bug_tasks(bug, options)
-    add_comment(bug, options)
+    if options.comment or options.tags:
+       add_comment_tag(bug, options)
     return
     
 def opt_parser_init(parser):
@@ -209,6 +214,8 @@ def opt_parser_init(parser):
     parser.add_option(
             '-i', '--importance', type="string", action="store", 
             dest="importance", help="assign importance to the bug")
+    parser.add_option('-t', '--tags', type="string", action="store", 
+                         help='space separated list of tags')
     parser.add_option(
          '--verbose', action='store_true', help='Print what you are doing')
 

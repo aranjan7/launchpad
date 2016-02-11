@@ -53,7 +53,7 @@ def get_bug_descr(options):
 
 def main(args):
 
-    usage = """%s: bug-title -t [tags] \n%s""" % (sys.argv[0], __doc__)
+    usage = """%s: <bug-title> -t [tags] \n%s""" % (sys.argv[0], __doc__)
     parser = OptionParser(usage=usage)
 
     edit_bug.opt_parser_init(parser)
@@ -68,6 +68,7 @@ def main(args):
     (options, args) = parser.parse_args(args=args)
     if (len(args) < 2):
         parser.print_usage()
+        return 1
 
     if options.importance is not None:
         imp = [j.strip() for j in options.importance.split(",")]
@@ -77,7 +78,7 @@ def main(args):
             return []
 
     if options.tags is None:
-        print 'Error: specify at least 1 tag'
+        print 'Error: must specify at least 1 tag'
         return
 
     bug_title = args[1]
