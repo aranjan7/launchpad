@@ -81,7 +81,9 @@ def edit_series(task, milestone, options):
 
     if milestone is not None:
         task.milestone_link = milestone
-
+    elif options.milestone.lower() == "null":
+        task.milestone_link = None
+        
     if options.status is not None:
         task.status = options.status
 
@@ -108,6 +110,8 @@ def add_comment_tag(bug, options):
    if options.tags is not None:
       tag_list = [j.strip() for j in options.tags.split(" ")]
       bug.tags = tag_list
+   if options.public is not None:
+      bug.private = False
 
    bug.lp_save()
    return
@@ -185,7 +189,7 @@ def edit_bug_tasks(bug, options):
 
 def edit_bug(bug, options):
     edit_bug_tasks(bug, options)
-    if options.comment or options.tags:
+    if options.comment or options.tags or options.public:
        add_comment_tag(bug, options)
     return
     
@@ -216,6 +220,7 @@ def opt_parser_init(parser):
             dest="importance", help="assign importance to the bug")
     parser.add_option('-t', '--tags', type="string", action="store", 
                          help='space separated list of tags')
+    parser.add_option('--public', action="store_true", help='set bug as public')
     parser.add_option(
          '--verbose', action='store_true', help='Print what you are doing')
 

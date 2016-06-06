@@ -58,8 +58,6 @@ def main(args):
 
     edit_bug.opt_parser_init(parser)
 
-    parser.add_option('--public', action="store_true",
-            help='set bug as public')
     parser.add_option('--security', action="store_true", 
             help='set bug as security vulnerability')
     parser.add_option('--file', action="store", 
