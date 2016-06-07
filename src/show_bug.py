@@ -65,7 +65,7 @@ def show_bug(bug, options):
    ''' To speedup in case of simple search print and return from here
    '''
 
-   if (options.brief and options.milestone is None and 
+   if (options.brief and options.milestone is None and options.series == 'none' and 
            (options.assignee is None or options.assignee.lower() != "unassigned")):
        print 'Bug %s: %s' %(bug.id, bug.title) 
        return
@@ -75,10 +75,13 @@ def show_bug(bug, options):
    for task in task_list:
        ms_name = "none"
        assignee = "none"
+       email = "none"
        if task.milestone is not None:
           ms_name = task.milestone.name
        if task.assignee is not None:
           assignee = task.assignee.name
+          email = task.assignee.display_name + ": "  
+          email += task.assignee.preferred_email_address_link.rsplit('/',1)[-1] 
 
        ps += "Series: {0:25} Assigned: {1:15} Importance: {2:14}  \
              Milestone: {3:12} Status: {4:20} \n".format(
@@ -100,7 +103,7 @@ def show_bug(bug, options):
    if not task_list:
       return
 
-   print 'Bug %s: %s' %(bug.id, bug.title) 
+   print 'Bug %s: %s %s' %(bug.id, bug.title, email)
    if options.brief:
        return
 
