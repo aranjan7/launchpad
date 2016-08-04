@@ -67,7 +67,7 @@ def show_bug(bug, options):
 
    if (options.brief and options.milestone is None and options.series == 'none' and 
            (options.assignee is None or options.assignee.lower() != "unassigned")):
-       print 'Bug %s: %s' %(bug.id, bug.title) 
+       print '%s: %s' %(bug.id, bug.title) 
        return
 
    ps = 'Scope(s):'
@@ -103,7 +103,7 @@ def show_bug(bug, options):
    if not task_list:
       return
 
-   print 'Bug %s: %s %s' %(bug.id, bug.title, email)
+   print '%s: %s %s' %(bug.id, bug.title, email)
    if options.brief:
        return
 

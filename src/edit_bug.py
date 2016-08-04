@@ -81,7 +81,7 @@ def edit_series(task, milestone, options):
 
     if milestone is not None:
         task.milestone_link = milestone
-    elif options.milestone.lower() == "null":
+    elif options.milestone and options.milestone.lower() == "null":
         task.milestone_link = None
         
     if options.status is not None:
