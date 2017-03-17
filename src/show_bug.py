@@ -40,10 +40,11 @@ def printf(format, *args):
 def match_task(task, options):
     """ Further grep the bugs for fields not supported by searchTask
     """
-    if (options.series == 'none' or options.series == task.target.name):
+    if (options.series == 'none' or 
+            options.series.lower() == task.target.name.lower()):
         if (options.milestone is None or 
                 (task.milestone is not None and 
-                   task.milestone.name == options.milestone) or
+                   task.milestone.name.lower() == options.milestone.lower()) or
                 (options.milestone.lower() == "none" and task.milestone is None)):
             # Filter unassigned bugs if "-a unassigned" is specified in cli.
             if (options.assignee is None or 
@@ -65,8 +66,10 @@ def show_bug(bug, options):
    ''' To speedup in case of simple search print and return from here
    '''
 
-   if (options.brief and options.milestone is None and options.series == 'none' and 
-           (options.assignee is None or options.assignee.lower() != "unassigned")):
+   if ((options.brief) or 
+           (options.detail is False and options.milestone is None 
+               and options.series == 'none' and 
+           (options.assignee is None or options.assignee.lower() != "unassigned"))):
        print '%s: %s' %(bug.id, bug.title) 
        return
 

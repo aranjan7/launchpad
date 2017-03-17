@@ -7,7 +7,7 @@ Prerequisite
 
 Install *launchpadlib* first.
 
-``` pip install launchpadlib ```
+``` pip install launchpadlib ; pip install simplejson```
 
 Or on Ubuntu:
 
